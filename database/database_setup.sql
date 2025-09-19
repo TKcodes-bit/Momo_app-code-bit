@@ -1,3 +1,6 @@
+-- Momo App Database Setup Script
+-- This script creates tables and inserts initial data for the Momo application.
+
 CREATE TABLE Users (
     user_id INT PRIMARY KEY,
     full_name VARCHAR(100),
