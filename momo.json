@@ -1,0 +1,20 @@
+{
+  "id": "integer" ,
+  "user_id": "integer" ,
+    "currency": "string",
+    "sender_id": "integer",
+    "receiver_id": "string",
+    "transaction_id" : "integer" ,
+    
+  },
+  "amount": "number",
+  "Transaction_date": "datetime",
+  
+    {
+      
+        "category_id": "integer"
+
+}
+  ]
+}
+
