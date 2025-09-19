@@ -29,7 +29,7 @@ CREATE TABLE System_Logs (
     log_id INT PRIMARY KEY,
     transaction_id INT,
     log_type VARCHAR(50),
-    date DATE,
+    log_date DATE,
     FOREIGN KEY (transaction_id) REFERENCES Transactions(transaction_id)
 );
 
@@ -54,7 +54,7 @@ INSERT INTO Transactions (transaction_id, sender_id, receiver_id, category_id, a
 (104, 4, 1, 1, 1000.00, '2025-09-09', 100.00),
 (105, 5, 3, 4, 30000.00, '2025-09-10', 1000.00);
 
-INSERT INTO System_Logs (log_id, transaction_id, log_type, date) VALUES
+INSERT INTO System_Logs (log_id, transaction_id, log_type, log_date) VALUES
 (201, 101, 'Success', '2025-09-06'),
 (202, 102, 'Success', '2025-09-07'),
 (203, 103, 'Failed', '2025-09-08'),
