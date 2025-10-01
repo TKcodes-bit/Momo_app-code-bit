@@ -13,9 +13,9 @@ if DSA_DIR not in sys.path:
     sys.path.insert(0, DSA_DIR)
 
 try:
-    from parse_xml import parse_sms_xml  # type: ignore
+    from parse_xml import parse_sms_xml  
 except Exception:
-    parse_sms_xml = None  # Fallback if import fails; handled at load time
+    parse_sms_xml = None  
 
 
 DATA_XML_PATH = os.path.join(DSA_DIR, "modified_sms_v2.xml")
@@ -24,8 +24,8 @@ DATA_JSON_PATH = os.path.join(DSA_DIR, "transactions.json")
 
 class InMemoryStore:
     def __init__(self) -> None:
-        self.transactions = []  # type: list[dict]
-        self.id_map = {}  # type: dict[str, dict]
+        self.transactions = []  
+        self.id_map = {}  
         self.next_numeric_suffix = 1
 
     def load(self) -> None:
@@ -180,12 +180,12 @@ class TransactionsHandler(BaseHTTPRequestHandler):
             return False
         return True
 
-    def do_OPTIONS(self) -> None:  # noqa: N802
+    def do_OPTIONS(self) -> None:  
         self.send_response(204)
         self._set_cors()
         self.end_headers()
 
-    def do_GET(self) -> None:  # noqa: N802
+    def do_GET(self) -> None:  
         if not self._require_auth():
             return
         parsed = urlparse(self.path)
@@ -206,7 +206,7 @@ class TransactionsHandler(BaseHTTPRequestHandler):
 
         self._send_json(404, {"error": "Not found"})
 
-    def do_POST(self) -> None:  # noqa: N802
+    def do_POST(self) -> None:  
         if not self._require_auth():
             return
         parsed = urlparse(self.path)
@@ -225,7 +225,7 @@ class TransactionsHandler(BaseHTTPRequestHandler):
             return
         self._send_json(404, {"error": "Not found"})
 
-    def do_PUT(self) -> None:  # noqa: N802
+    def do_PUT(self) -> None:  
         if not self._require_auth():
             return
         parsed = urlparse(self.path)
@@ -248,7 +248,7 @@ class TransactionsHandler(BaseHTTPRequestHandler):
             return
         self._send_json(404, {"error": "Not found"})
 
-    def do_DELETE(self) -> None:  # noqa: N802
+    def do_DELETE(self) -> None: 
         if not self._require_auth():
             return
         parsed = urlparse(self.path)
