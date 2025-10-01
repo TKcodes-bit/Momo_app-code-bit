@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import base64
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse
 
@@ -128,6 +129,8 @@ def parse_json_body(handler: BaseHTTPRequestHandler) -> tuple[dict, str | None]:
 
 
 class TransactionsHandler(BaseHTTPRequestHandler):
+    AUTH_REALM = "Transactions API"
+
     def _set_cors(self) -> None:
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
@@ -142,12 +145,49 @@ class TransactionsHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(encoded)
 
+    def _unauthorized(self) -> None:
+        # 401 with WWW-Authenticate for Basic realm
+        self.send_response(401)
+        self._set_cors()
+        self.send_header("WWW-Authenticate", f'Basic realm="{self.AUTH_REALM}", charset="UTF-8"')
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        body = json.dumps({"error": "Unauthorized"}).encode("utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _require_auth(self) -> bool:
+        # Credentials from environment
+        expected_user = os.getenv("AUTH_USERNAME", "admin")
+        expected_pass = os.getenv("AUTH_PASSWORD", "secret")
+        # Read Authorization header
+        auth_header = self.headers.get("Authorization", "")
+        if not auth_header.startswith("Basic "):
+            self._unauthorized()
+            return False
+        b64_part = auth_header.split(" ", 1)[1].strip()
+        try:
+            decoded = base64.b64decode(b64_part).decode("utf-8")
+        except Exception:
+            self._unauthorized()
+            return False
+        if ":" not in decoded:
+            self._unauthorized()
+            return False
+        username, password = decoded.split(":", 1)
+        if username != expected_user or password != expected_pass:
+            self._unauthorized()
+            return False
+        return True
+
     def do_OPTIONS(self) -> None:  # noqa: N802
         self.send_response(204)
         self._set_cors()
         self.end_headers()
 
     def do_GET(self) -> None:  # noqa: N802
+        if not self._require_auth():
+            return
         parsed = urlparse(self.path)
         path_parts = [p for p in parsed.path.split("/") if p]
 
@@ -167,6 +207,8 @@ class TransactionsHandler(BaseHTTPRequestHandler):
         self._send_json(404, {"error": "Not found"})
 
     def do_POST(self) -> None:  # noqa: N802
+        if not self._require_auth():
+            return
         parsed = urlparse(self.path)
         path_parts = [p for p in parsed.path.split("/") if p]
         if len(path_parts) == 1 and path_parts[0] == "transactions":
@@ -184,6 +226,8 @@ class TransactionsHandler(BaseHTTPRequestHandler):
         self._send_json(404, {"error": "Not found"})
 
     def do_PUT(self) -> None:  # noqa: N802
+        if not self._require_auth():
+            return
         parsed = urlparse(self.path)
         path_parts = [p for p in parsed.path.split("/") if p]
         if len(path_parts) == 2 and path_parts[0] == "transactions":
@@ -205,6 +249,8 @@ class TransactionsHandler(BaseHTTPRequestHandler):
         self._send_json(404, {"error": "Not found"})
 
     def do_DELETE(self) -> None:  # noqa: N802
+        if not self._require_auth():
+            return
         parsed = urlparse(self.path)
         path_parts = [p for p in parsed.path.split("/") if p]
         if len(path_parts) == 2 and path_parts[0] == "transactions":
